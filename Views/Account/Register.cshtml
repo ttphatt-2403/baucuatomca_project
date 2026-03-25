@@ -88,8 +88,14 @@
             successEl.classList.remove('d-none');
             setTimeout(() => window.location.href = '/Room', 1200);
         } else {
-            const data = await res.json();
-            throw new Error(data.message || 'Xác thực thất bại');
+            let errorMsg = 'Xác thực thất bại (Lỗi máy chủ)';
+            try {
+                const data = await res.json();
+                errorMsg = data.message || errorMsg;
+            } catch (e) {
+                console.error(e);
+            }
+            throw new Error(errorMsg);
         }
     }
 
