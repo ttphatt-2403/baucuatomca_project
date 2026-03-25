@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bctc-web
+    ports:
+      - "5067:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=BauCuaTomCaDb;User=sa;Password=Bctc88StrongPassword!;TrustServerCertificate=True;
+    depends_on:
+      - db
+    volumes:
+      # Mount the firebase secret file so the container can read it at runtime
+      - ./firebase-service-account.json:/app/firebase-service-account.json
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: bctc-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Bctc88StrongPassword!
+    ports:
+      - "1433:1433"
+    volumes:
+      - bctc_sqldata:/var/opt/mssql
+
+volumes:
+  bctc_sqldata:
