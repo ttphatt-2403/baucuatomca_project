@@ -61,12 +61,18 @@ public class AccountController(AppDbContext db, FirebaseService firebase, IConfi
         }
         else
         {
+            // Cập nhật email nếu trước đây bị trống
+            if (string.IsNullOrEmpty(user.Email) && !string.IsNullOrEmpty(email))
+            {
+                user.Email = email;
+            }
             // Tự động cấp admin nếu email khớp
-            if (!string.IsNullOrEmpty(adminEmail) && email == adminEmail && !user.IsAdmin)
+            if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(email) && email == adminEmail && !user.IsAdmin)
             {
                 user.IsAdmin = true;
-                await db.SaveChangesAsync();
             }
+            if (db.ChangeTracker.HasChanges())
+                await db.SaveChangesAsync();
         }
 
         // Tạo cookie session

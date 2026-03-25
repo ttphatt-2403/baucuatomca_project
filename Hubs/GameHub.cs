@@ -96,6 +96,7 @@ public class GameHub(
         if (user == null || user.Balance < amount || amount <= 0) return;
 
         user.Balance -= amount;
+        if (user.Balance < 0) { user.Balance = 0; return; } // guard race condition
         db.Bets.Add(new Bet { RoundId = round.Id, UserId = CurrentUserId, Symbol = sym, Amount = amount });
         await db.SaveChangesAsync();
 

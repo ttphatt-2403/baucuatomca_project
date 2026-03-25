@@ -6,75 +6,96 @@
     int pageSize = ViewBag.PageSize;
     int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 }
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="text-warning">👥 Người dùng (@totalCount)</h2>
-    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Dashboard</a>
-</div>
+@await Html.PartialAsync("_AdminNav")
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible">@TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-dismissible border-0 mb-4" style="background:rgba(0,255,136,.1);color:#00ff88;">
+        @TempData["Success"]
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
     </div>
 }
 
-<!-- Search -->
-<form method="get" class="mb-3 d-flex gap-2">
-    <input name="search" value="@ViewBag.Search" class="form-control bg-dark text-white border-secondary" style="max-width:300px;" placeholder="Tìm theo tên / email..." />
-    <button class="btn btn-warning">Tìm</button>
-    @if (!string.IsNullOrEmpty(ViewBag.Search as string))
-    {
-        <a asp-action="Users" class="btn btn-outline-secondary">Xoá lọc</a>
-    }
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="text-warning mb-0 fw-bold">Người dùng</h3>
+        <small class="text-muted">@totalCount tài khoản</small>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<form method="get" class="mb-4">
+    <div class="d-flex gap-2" style="max-width:460px;">
+        <div style="position:relative;flex:1;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#555;">🔍</span>
+            <input name="search" value="@ViewBag.Search"
+                   class="form-control border-0"
+                   style="background:#13132a;color:#fff;padding-left:36px;border-radius:10px;"
+                   placeholder="Tìm theo tên hoặc email..." />
+        </div>
+        <button class="btn btn-warning px-4" style="border-radius:10px;">Tìm</button>
+        @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+        {
+            <a asp-action="Users" class="btn px-3" style="background:#1e1e35;color:#888;border-radius:10px;">✕</a>
+        }
+    </div>
 </form>
 
-<div class="table-responsive">
-    <table class="table table-dark table-hover align-middle">
-        <thead style="color:#FFD700;">
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Số dư (xu)</th>
-                <th>Admin</th>
-                <th>Ngày tạo</th>
-                <th>Thao tác</th>
+<!-- Table -->
+<div style="background:#0f0f20;border:1px solid #1e1e35;border-radius:14px;overflow:hidden;">
+    <table class="table mb-0 align-middle" style="color:#ccc;">
+        <thead>
+            <tr style="background:#13132a;border-bottom:1px solid #2a2a4a;">
+                <th class="px-4 py-3" style="color:#FFD700;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;width:50px;">ID</th>
+                <th class="py-3" style="color:#FFD700;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Người dùng</th>
+                <th class="py-3" style="color:#FFD700;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Email</th>
+                <th class="py-3" style="color:#FFD700;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Số dư</th>
+                <th class="py-3" style="color:#FFD700;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Ngày tạo</th>
+                <th class="py-3 text-end pe-4" style="color:#FFD700;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Thao tác</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var user in Model)
             {
-                <tr>
-                    <td class="text-muted">@user.Id</td>
+                <tr style="border-bottom:1px solid #1a1a2e; transition:background .15s;" onmouseover="this.style.background='#13132a'" onmouseout="this.style.background='transparent'">
+                    <td class="px-4" style="color:#444;font-size:.82rem;">@user.Id</td>
                     <td>
-                        @user.Username
-                        @if (user.IsAdmin)
-                        {
-                            <span class="badge bg-warning text-dark ms-1">Admin</span>
-                        }
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#2a1a6e,#1a2a6e);display:flex;align-items:center;justify-content:center;font-weight:700;color:#a78bfa;font-size:.9rem;flex-shrink:0;">
+                                @user.Username.Substring(0, 1).ToUpper()
+                            </div>
+                            <div>
+                                <div style="color:#fff;font-weight:500;">@user.Username</div>
+                                @if (user.IsAdmin)
+                                {
+                                    <span style="background:rgba(255,215,0,.15);color:#FFD700;font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:20px;letter-spacing:.5px;">ADMIN</span>
+                                }
+                            </div>
+                        </div>
                     </td>
-                    <td class="text-muted">@user.Email</td>
-                    <td style="color:#FFD700;">@user.Balance.ToString("N0")</td>
+                    <td style="color:#666;font-size:.85rem;">@(string.IsNullOrEmpty(user.Email) ? "—" : user.Email)</td>
                     <td>
-                        @if (user.IsAdmin)
-                        {
-                            <span class="text-warning">✓</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted">-</span>
-                        }
+                        <span style="color:#FFD700;font-weight:600;">@user.Balance.ToString("N0")</span>
+                        <span style="color:#555;font-size:.78rem;"> xu</span>
                     </td>
-                    <td class="text-muted" style="font-size:.85rem;">@user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        <div class="d-flex gap-1">
-                            <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning">✏️ Sửa</a>
+                    <td style="color:#555;font-size:.82rem;">@user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    <td class="text-end pe-4">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="EditUser" asp-route-id="@user.Id"
+                               style="background:#1e1e35;color:#FFD700;border:1px solid #2a2a4a;border-radius:8px;padding:5px 14px;font-size:.82rem;text-decoration:none;transition:all .2s;"
+                               onmouseover="this.style.borderColor='#FFD700'" onmouseout="this.style.borderColor='#2a2a4a'">
+                                ✏️ Sửa
+                            </a>
                             @if (user.Id.ToString() != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
                             {
                                 <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post"
                                       onsubmit="return confirm('Xác nhận xoá @user.Username?')">
-                                    <button class="btn btn-sm btn-outline-danger">🗑 Xoá</button>
+                                    <button type="submit"
+                                            style="background:#1e1520;color:#ff6b6b;border:1px solid #2a1a1a;border-radius:8px;padding:5px 14px;font-size:.82rem;transition:all .2s;"
+                                            onmouseover="this.style.borderColor='#ff6b6b'" onmouseout="this.style.borderColor='#2a1a1a'">
+                                        🗑 Xoá
+                                    </button>
                                 </form>
                             }
                         </div>
@@ -88,15 +109,17 @@
 <!-- Pagination -->
 @if (totalPages > 1)
 {
-    <nav>
-        <ul class="pagination">
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                <li class="page-item @(i == page ? "active" : "")">
-                    <a class="page-link bg-dark border-secondary text-white" asp-action="Users"
-                       asp-route-page="@i" asp-route-search="@ViewBag.Search">@i</a>
-                </li>
-            }
-        </ul>
-    </nav>
+    <div class="d-flex gap-2 mt-4">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a asp-action="Users" asp-route-page="@i" asp-route-search="@ViewBag.Search"
+               style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:.85rem;
+               @(i == page ? "background:#FFD700;color:#000;font-weight:700;" : "background:#13132a;color:#888;border:1px solid #2a2a4a;")">
+                @i
+            </a>
+        }
+    </div>
 }
+
+    </div>
+</div>

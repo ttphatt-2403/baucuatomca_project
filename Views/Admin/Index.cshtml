@@ -1,56 +1,110 @@
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-warning">⚙️ Admin Dashboard</h2>
-</div>
+@await Html.PartialAsync("_AdminNav")
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success alert-dismissible border-0 mb-4" style="background:rgba(0,255,136,.1);color:#00ff88;">
+        @TempData["Success"]
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<!-- Stats -->
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card text-center" style="background:#1a1a2e;border:1px solid #FFD700;">
-            <div class="card-body">
-                <div style="font-size:2.5rem;color:#FFD700;">@ViewBag.TotalUsers</div>
-                <div class="text-muted">Người chơi</div>
-            </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="text-warning mb-0 fw-bold">Dashboard</h3>
+        <small class="text-muted">Tổng quan hệ thống</small>
+    </div>
+</div>
+
+<!-- Stat Cards Row 1 -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="stat-card" style="border-color:#FFD700;">
+            <div class="stat-icon" style="background:rgba(255,215,0,.15);color:#FFD700;">👥</div>
+            <div class="stat-value" style="color:#FFD700;">@ViewBag.TotalUsers</div>
+            <div class="stat-label">Người chơi</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-center" style="background:#1a1a2e;border:1px solid #00ff88;">
-            <div class="card-body">
-                <div style="font-size:2.5rem;color:#00ff88;">@ViewBag.ActiveRooms / @ViewBag.TotalRooms</div>
-                <div class="text-muted">Phòng đang hoạt động / Tổng</div>
-            </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-color:#00ff88;">
+            <div class="stat-icon" style="background:rgba(0,255,136,.15);color:#00ff88;">🏠</div>
+            <div class="stat-value" style="color:#00ff88;">@ViewBag.ActiveRooms</div>
+            <div class="stat-label">Phòng đang mở</div>
+            <div class="stat-sub">/ @ViewBag.TotalRooms tổng</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-center" style="background:#1a1a2e;border:1px solid #ff6666;">
-            <div class="card-body">
-                <div style="font-size:2.5rem;color:#ff6666;">@ViewBag.TotalBets</div>
-                <div class="text-muted">Tổng lượt cược (@ViewBag.TotalRounds vòng)</div>
-            </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-color:#ff6b6b;">
+            <div class="stat-icon" style="background:rgba(255,107,107,.15);color:#ff6b6b;">🎲</div>
+            <div class="stat-value" style="color:#ff6b6b;">@ViewBag.TotalRounds</div>
+            <div class="stat-label">Vòng đã chơi</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="border-color:#a78bfa;">
+            <div class="stat-icon" style="background:rgba(167,139,250,.15);color:#a78bfa;">🎯</div>
+            <div class="stat-value" style="color:#a78bfa;">@ViewBag.TotalBets</div>
+            <div class="stat-label">Tổng lượt cược</div>
         </div>
     </div>
 </div>
 
+<!-- Stat Cards Row 2 -->
 <div class="row g-3 mb-4">
     <div class="col-md-6">
-        <div class="card text-center" style="background:#1a1a2e;border:1px solid #888;">
-            <div class="card-body">
-                <div style="font-size:2rem;color:#FFD700;">@ViewBag.TotalMoney xu</div>
-                <div class="text-muted">Tổng xu đang lưu thông</div>
+        <div class="stat-card" style="border-color:#38bdf8; flex-direction:row; align-items:center; gap:20px;">
+            <div class="stat-icon" style="background:rgba(56,189,248,.15);color:#38bdf8; flex-shrink:0;">💰</div>
+            <div>
+                <div class="stat-value" style="color:#38bdf8;">@ViewBag.TotalMoney.ToString("N0") xu</div>
+                <div class="stat-label">Tổng xu đang lưu thông</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick links -->
-<div class="d-flex gap-3">
-    <a asp-action="Users" class="btn btn-warning">👥 Quản lý người dùng</a>
-    <a asp-action="Rooms" class="btn btn-outline-info">🏠 Quản lý phòng</a>
+<!-- Quick Actions -->
+<h6 class="text-muted mb-3" style="letter-spacing:1px;text-transform:uppercase;font-size:.75rem;">Truy cập nhanh</h6>
+<div class="row g-3">
+    <div class="col-md-4">
+        <a asp-action="Users" class="quick-card">
+            <div style="font-size:2rem;">👥</div>
+            <div class="fw-bold text-warning">Quản lý người dùng</div>
+            <div class="text-muted" style="font-size:.82rem;">Xem, sửa, xoá tài khoản</div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a asp-action="Rooms" class="quick-card">
+            <div style="font-size:2rem;">🏠</div>
+            <div class="fw-bold text-info">Quản lý phòng chơi</div>
+            <div class="text-muted" style="font-size:.82rem;">Xem & xoá phòng</div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #13132a 0%, #0d0d1f 100%);
+        border: 1px solid;
+        border-radius: 14px;
+        padding: 20px;
+        display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+        transition: transform .2s, box-shadow .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    .stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 4px; }
+    .stat-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .stat-label { color: #888; font-size: .82rem; }
+    .stat-sub { color: #555; font-size: .78rem; }
+    .quick-card {
+        display: flex; flex-direction: column; gap: 4px;
+        background: #13132a; border: 1px solid #2a2a4a;
+        border-radius: 14px; padding: 20px;
+        text-decoration: none; transition: all .2s;
+    }
+    .quick-card:hover { border-color: #FFD700; background: #1a1a35; transform: translateY(-2px); }
+</style>
+
+    </div>
 </div>
