@@ -1,0 +1,68 @@
+@model IEnumerable<BauCuaTomCa.Models.Room>
+@{
+    ViewData["Title"] = "Quản lý phòng";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-warning">🏠 Phòng chơi (@Model.Count())</h2>
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Dashboard</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible">@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="table-responsive">
+    <table class="table table-dark table-hover align-middle">
+        <thead style="color:#FFD700;">
+            <tr>
+                <th>ID</th>
+                <th>Tên phòng</th>
+                <th>Trạng thái</th>
+                <th>Người chơi</th>
+                <th>Vòng chơi</th>
+                <th>Ngày tạo</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in Model)
+            {
+                <tr>
+                    <td class="text-muted">@room.Id</td>
+                    <td>@room.Name</td>
+                    <td>
+                        @{
+                            var (badgeClass, label) = room.Status switch
+                            {
+                                BauCuaTomCa.Models.RoomStatus.Waiting => ("bg-secondary", "Chờ"),
+                                BauCuaTomCa.Models.RoomStatus.Betting => ("bg-success", "Cược"),
+                                BauCuaTomCa.Models.RoomStatus.Revealing => ("bg-warning text-dark", "Mở bài"),
+                                BauCuaTomCa.Models.RoomStatus.Finished => ("bg-danger", "Kết thúc"),
+                                _ => ("bg-secondary", room.Status.ToString())
+                            };
+                        }
+                        <span class="badge @badgeClass">@label</span>
+                    </td>
+                    <td>
+                        @foreach (var p in room.RoomPlayers)
+                        {
+                            <span class="badge bg-dark border border-secondary me-1">@p.User?.Username</span>
+                        }
+                    </td>
+                    <td>@room.Rounds.Count</td>
+                    <td class="text-muted" style="font-size:.85rem;">@room.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        <form asp-action="DeleteRoom" asp-route-id="@room.Id" method="post"
+                              onsubmit="return confirm('Xác nhận xoá phòng @room.Name?')">
+                            <button class="btn btn-sm btn-outline-danger">🗑 Xoá</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

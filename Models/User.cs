@@ -8,6 +8,7 @@ public class User
     public string Email { get; set; } = string.Empty;
     public decimal Balance { get; set; } = 100;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsAdmin { get; set; } = false;
 
     public ICollection<RoomPlayer> RoomPlayers { get; set; } = [];
     public ICollection<Bet> Bets { get; set; } = [];

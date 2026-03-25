@@ -42,6 +42,10 @@
                 <div class="divider mb-3">hoặc</div>
 
                 <div class="mb-3">
+                    <label>Tên hiển thị</label>
+                    <input id="username" type="text" class="form-control bg-dark text-white border-secondary" placeholder="VD: ttphatt" maxlength="30" />
+                </div>
+                <div class="mb-3">
                     <label>Email</label>
                     <input id="email" type="email" class="form-control bg-dark text-white border-secondary" />
                 </div>
@@ -71,10 +75,11 @@
     const googleProvider = new GoogleAuthProvider();
 
     async function sendTokenToServer(idToken) {
+        const username = document.getElementById('username')?.value?.trim() || '';
         const res = await fetch('/Account/FirebaseCallback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idToken })
+            body: JSON.stringify({ idToken, username })
         });
         if (res.ok) {
             const data = await res.json();

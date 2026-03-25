@@ -26,6 +26,10 @@
                         <span class="navbar-text text-muted me-3">@User.Identity.Name</span>
                         <a asp-controller="Room" asp-action="Index" class="btn btn-sm btn-outline-warning me-2">Phòng chơi</a>
                         <a asp-controller="History" asp-action="Index" class="btn btn-sm btn-outline-info me-2">📋 Lịch sử</a>
+                        @if (User.FindFirst("IsAdmin")?.Value == "True")
+                        {
+                            <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-warning me-2">⚙️ Admin</a>
+                        }
                         <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                             <button class="btn btn-sm btn-outline-secondary">Đăng xuất</button>
                         </form>

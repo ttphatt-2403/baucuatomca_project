@@ -35,26 +35,38 @@ public class AccountController(AppDbContext db, FirebaseService firebase, IConfi
         var uid = token.Uid;
         var email = token.Claims.TryGetValue("email", out var e) ? e.ToString()! : "";
         var displayName = token.Claims.TryGetValue("name", out var n) ? n.ToString()! : email.Split('@')[0];
+        var adminEmail = config["AdminEmail"] ?? "";
 
         // Tìm hoặc tạo user trong DB
         var user = await db.Users.FirstOrDefaultAsync(u => u.FirebaseUid == uid);
         if (user == null)
         {
             // Đảm bảo username unique
-            var username = displayName;
+            var username = !string.IsNullOrEmpty(request.Username) ? request.Username : displayName;
             var count = 1;
+            var baseUsername = username;
             while (await db.Users.AnyAsync(u => u.Username == username))
-                username = $"{displayName}{count++}";
+                username = $"{baseUsername}{count++}";
 
             user = new User
             {
                 FirebaseUid = uid,
                 Email = email,
                 Username = username,
-                Balance = config.GetValue<decimal>("GameSettings:InitialBalance", 100)
+                Balance = config.GetValue<decimal>("GameSettings:InitialBalance", 100),
+                IsAdmin = !string.IsNullOrEmpty(adminEmail) && email == adminEmail
             };
             db.Users.Add(user);
             await db.SaveChangesAsync();
+        }
+        else
+        {
+            // Tự động cấp admin nếu email khớp
+            if (!string.IsNullOrEmpty(adminEmail) && email == adminEmail && !user.IsAdmin)
+            {
+                user.IsAdmin = true;
+                await db.SaveChangesAsync();
+            }
         }
 
         // Tạo cookie session
@@ -62,7 +74,8 @@ public class AccountController(AppDbContext db, FirebaseService firebase, IConfi
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.Username),
-            new(ClaimTypes.Email, user.Email)
+            new(ClaimTypes.Email, user.Email),
+            new("IsAdmin", user.IsAdmin.ToString())
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
@@ -81,4 +94,5 @@ public class AccountController(AppDbContext db, FirebaseService firebase, IConfi
 public class FirebaseCallbackRequest
 {
     public string IdToken { get; set; } = string.Empty;
+    public string? Username { get; set; }
 }

@@ -1,0 +1,51 @@
+@model BauCuaTomCa.Models.User
+@{
+    ViewData["Title"] = "Sửa người dùng";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card" style="background:#1a1a2e;border:1px solid #8B6914;">
+            <div class="card-header" style="border-bottom:1px solid #8B6914;">
+                <h4 class="text-warning mb-0">✏️ Sửa người dùng #@Model.Id</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="EditUser" asp-route-id="@Model.Id" method="post">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@err.ErrorMessage</div>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="text-muted">Email (không đổi được)</label>
+                        <input type="text" class="form-control bg-dark text-muted border-secondary" value="@Model.Email" disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-warning">Username</label>
+                        <input type="text" name="username" class="form-control bg-dark text-white border-secondary"
+                               value="@Model.Username" required maxlength="50" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-warning">Số dư (xu)</label>
+                        <input type="number" name="balance" class="form-control bg-dark text-white border-secondary"
+                               value="@Model.Balance" min="0" step="1" required />
+                    </div>
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" name="isAdmin" class="form-check-input" id="isAdminCheck"
+                               value="true" @(Model.IsAdmin ? "checked" : "") />
+                        <label class="form-check-label text-warning" for="isAdminCheck">Cấp quyền Admin</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning flex-grow-1">💾 Lưu thay đổi</button>
+                        <a asp-action="Users" class="btn btn-outline-secondary">Huỷ</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

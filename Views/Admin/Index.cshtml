@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-warning">⚙️ Admin Dashboard</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card text-center" style="background:#1a1a2e;border:1px solid #FFD700;">
+            <div class="card-body">
+                <div style="font-size:2.5rem;color:#FFD700;">@ViewBag.TotalUsers</div>
+                <div class="text-muted">Người chơi</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center" style="background:#1a1a2e;border:1px solid #00ff88;">
+            <div class="card-body">
+                <div style="font-size:2.5rem;color:#00ff88;">@ViewBag.ActiveRooms / @ViewBag.TotalRooms</div>
+                <div class="text-muted">Phòng đang hoạt động / Tổng</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center" style="background:#1a1a2e;border:1px solid #ff6666;">
+            <div class="card-body">
+                <div style="font-size:2.5rem;color:#ff6666;">@ViewBag.TotalBets</div>
+                <div class="text-muted">Tổng lượt cược (@ViewBag.TotalRounds vòng)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card text-center" style="background:#1a1a2e;border:1px solid #888;">
+            <div class="card-body">
+                <div style="font-size:2rem;color:#FFD700;">@ViewBag.TotalMoney xu</div>
+                <div class="text-muted">Tổng xu đang lưu thông</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick links -->
+<div class="d-flex gap-3">
+    <a asp-action="Users" class="btn btn-warning">👥 Quản lý người dùng</a>
+    <a asp-action="Rooms" class="btn btn-outline-info">🏠 Quản lý phòng</a>
+</div>
