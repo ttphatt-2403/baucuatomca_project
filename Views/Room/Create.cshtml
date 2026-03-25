@@ -1,0 +1,27 @@
+@{
+    ViewData["Title"] = "Tạo phòng";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card bg-dark border-secondary p-4">
+            <h4 class="text-warning mb-4">Tạo phòng mới</h4>
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="text-muted">Tên phòng</label>
+                    <input name="name" class="form-control bg-dark text-white border-secondary" required />
+                </div>
+                <div class="mb-4">
+                    <label class="text-muted">Số người tối đa</label>
+                    <select name="maxPlayers" class="form-select bg-dark text-white border-secondary">
+                        <option value="3">3 người</option>
+                        <option value="4">4 người</option>
+                        <option value="5" selected>5 người</option>
+                    </select>
+                </div>
+                <button class="btn btn-warning w-100">Tạo phòng</button>
+                <a asp-action="Index" class="btn btn-outline-secondary w-100 mt-2">Huỷ</a>
+            </form>
+        </div>
+    </div>
+</div>

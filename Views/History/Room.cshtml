@@ -1,0 +1,76 @@
+@model IEnumerable<BauCuaTomCa.Models.Round>
+@{
+    ViewData["Title"] = "Lịch sử phòng";
+    var room = ViewBag.Room as BauCuaTomCa.Models.Room;
+    var diceEmoji = new Dictionary<string, string>
+    {
+        ["Bau"] = "🎃", ["Cua"] = "🦀", ["Tom"] = "🦐",
+        ["Ca"] = "🐟", ["Ga"] = "🐓", ["Nai"] = "🦌"
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="text-warning">📋 Lịch sử phòng: @room?.Name</h3>
+    <a asp-controller="History" asp-action="Index" class="btn btn-outline-warning">← Lịch sử của tôi</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5 text-muted">
+        <div style="font-size:3rem">🎯</div>
+        <p>Chưa có vòng nào kết thúc.</p>
+    </div>
+}
+else
+{
+    @foreach (var round in Model)
+    {
+        var d1 = round.Dice1?.ToString() ?? "?";
+        var d2 = round.Dice2?.ToString() ?? "?";
+        var d3 = round.Dice3?.ToString() ?? "?";
+        <div class="card bg-dark border-secondary mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="text-warning fw-bold">
+                    Vòng #@round.Id &nbsp;
+                    <span style="font-size:1.5rem">
+                        @(diceEmoji.GetValueOrDefault(d1, d1))
+                        @(diceEmoji.GetValueOrDefault(d2, d2))
+                        @(diceEmoji.GetValueOrDefault(d3, d3))
+                    </span>
+                </span>
+                <small class="text-muted">@round.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-dark table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-muted ps-3">Người chơi</th>
+                            <th class="text-muted">Đặt cược</th>
+                            <th class="text-muted">Xu cược</th>
+                            <th class="text-muted">Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var bet in round.Bets.OrderByDescending(b => b.WinAmount))
+                        {
+                            var isWin = bet.WinAmount > 0;
+                            <tr>
+                                <td class="ps-3 text-white">@bet.User.Username</td>
+                                <td>
+                                    @(diceEmoji.GetValueOrDefault(bet.Symbol.ToString(), bet.Symbol.ToString()))
+                                    @bet.Symbol
+                                </td>
+                                <td class="text-white">@bet.Amount xu</td>
+                                <td>
+                                    <span class="badge @(isWin ? "bg-success" : "bg-danger")">
+                                        @(isWin ? "+" : "")@bet.WinAmount xu
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

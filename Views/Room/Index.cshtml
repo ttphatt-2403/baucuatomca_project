@@ -1,0 +1,91 @@
+@model IEnumerable<BauCuaTomCa.Models.Room>
+@{
+    ViewData["Title"] = "Danh sách phòng";
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="text-warning mb-0">🎲 Danh sách phòng</h2>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Thông tin người dùng + số xu -->
+        <div class="card bg-dark border-secondary px-3 py-2 d-flex flex-row align-items-center gap-3">
+            <div>
+                <div class="text-muted small">Xin chào</div>
+                <div class="text-white fw-bold">@User.Identity!.Name</div>
+            </div>
+            <div class="border-start border-secondary ps-3">
+                <div class="text-muted small">Số dư</div>
+                <div class="text-warning fw-bold fs-5" id="lobbyBalance">@ViewBag.Balance xu</div>
+            </div>
+        </div>
+        <a asp-action="Create" class="btn btn-warning">+ Tạo phòng</a>
+        <a asp-controller="History" asp-action="Index" class="btn btn-outline-info">📋 Lịch sử</a>
+        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+            <button class="btn btn-outline-secondary">Đăng xuất</button>
+        </form>
+    </div>
+</div>
+
+<div id="roomList">
+    <div class="text-center text-muted py-4">
+        <div class="spinner-border text-warning" role="status"></div>
+        <p class="mt-2">Đang tải danh sách phòng...</p>
+    </div>
+</div>
+
+@section Scripts {
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/gameHub")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("RoomsUpdated", rooms => {
+        const container = document.getElementById('roomList');
+        if (rooms.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <div style="font-size:4rem">🎯</div>
+                    <p>Chưa có phòng nào. Hãy tạo phòng mới!</p>
+                </div>`;
+            return;
+        }
+        container.innerHTML = `<div class="row g-3">` + rooms.map(r => `
+            <div class="col-md-4">
+                <div class="card bg-dark border-secondary h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-white">🏠 ${r.name}</h5>
+                        <p class="text-muted mb-1">
+                            Người chơi: <strong class="text-warning">${r.playerCount} / ${r.maxPlayers}</strong>
+                        </p>
+                        <span class="badge ${r.status === 'Waiting' ? 'bg-success' : 'bg-warning text-dark'}">
+                            ${r.status === 'Waiting' ? '⏳ Đang chờ' : '🎮 Đang chơi'}
+                        </span>
+                    </div>
+                    <div class="card-footer bg-transparent border-secondary">
+                        <form action="/Room/Join/${r.id}" method="post">
+                            <button class="btn btn-outline-warning w-100"
+                                ${r.playerCount >= r.maxPlayers || r.status !== 'Waiting' ? 'disabled' : ''}>
+                                ${r.playerCount >= r.maxPlayers ? 'Phòng đầy' : r.status !== 'Waiting' ? 'Đang chơi' : 'Vào phòng'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `).join('') + `</div>`;
+    });
+
+    // Cập nhật số xu real-time từ server
+    connection.on("BalanceUpdated", bal => {
+        document.getElementById('lobbyBalance').textContent = bal + ' xu';
+    });
+
+    connection.onreconnected(() => connection.invoke("JoinLobby"));
+    connection.start().then(() => connection.invoke("JoinLobby"));
+
+    window.addEventListener('beforeunload', () => {
+        connection.invoke("LeaveLobby").catch(() => {});
+    });
+</script>
+}

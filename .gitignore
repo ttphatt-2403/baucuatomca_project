@@ -1,0 +1,23 @@
+## Build outputs
+bin/
+obj/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## ASP.NET
+appsettings.Development.json
+
+## Secrets - KHÔNG BAO GIỜ commit các file này
+firebase-service-account.json
+*.pfx
+*.p12
+secrets.json
+
+## OS
+.DS_Store
+Thumbs.db

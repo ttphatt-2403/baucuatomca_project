@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Bầu Cua Tôm Cá</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body { background-color: #0f0f1a; color: #e0e0e0; }
+        .navbar { background: #1a1a2e !important; border-bottom: 1px solid #333; }
+        .navbar-brand { color: #ffd700 !important; font-weight: bold; }
+        footer { background: #1a1a2e; border-top: 1px solid #333; color: #666; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Room" asp-action="Index">
+                    <img src="/images/logo.png.jpg" alt="BCTC88" style="height:45px;" />
+                </a>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="navbar-text text-muted me-3">@User.Identity.Name</span>
+                        <a asp-controller="Room" asp-action="Index" class="btn btn-sm btn-outline-warning me-2">Phòng chơi</a>
+                        <a asp-controller="History" asp-action="Index" class="btn btn-sm btn-outline-info me-2">📋 Lịch sử</a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button class="btn btn-sm btn-outline-secondary">Đăng xuất</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-warning me-2">Đăng nhập</a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-sm btn-outline-warning">Đăng ký</a>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container py-4">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="py-3 text-center">
+        <div class="container">
+            &copy; 2026 - Bầu Cua Tôm Cá
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

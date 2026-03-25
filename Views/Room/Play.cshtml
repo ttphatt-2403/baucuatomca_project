@@ -1,0 +1,743 @@
+@model BauCuaTomCa.Models.Room
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = null;
+    var currentUserId = (int)ViewBag.CurrentUserId;
+    var balance = (decimal)ViewBag.CurrentUserBalance;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.Name - BCTC88</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: radial-gradient(ellipse at center, #0a2a0a 0%, #041504 70%, #000 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ── Top bar ── */
+        .top-bar {
+            background: linear-gradient(180deg, #1a0a00 0%, #0d0600 100%);
+            border-bottom: 2px solid #8B6914;
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-text { color: #FFD700; font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 20px #FFD700; }
+        .balance-box {
+            background: linear-gradient(135deg, #1a1a00, #2a2000);
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            padding: 4px 18px;
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* ── Casino table ── */
+        .casino-table {
+            background: radial-gradient(ellipse at center, #1a6b1a 0%, #0d4d0d 60%, #083008 100%);
+            border: 6px solid #8B6914;
+            border-radius: 30px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), inset 0 0 80px rgba(0,0,0,0.3);
+            padding: 20px;
+            max-width: 1100px;
+            margin: 15px auto;
+            position: relative;
+        }
+        .casino-table::before {
+            content: '';
+            position: absolute; inset: 8px;
+            border: 2px solid rgba(139,105,20,0.3);
+            border-radius: 24px;
+            pointer-events: none;
+        }
+
+        /* ── Status bar ── */
+        .status-bar {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .countdown-circle {
+            width: 80px; height: 80px;
+            background: radial-gradient(circle, #FFD700, #B8860B);
+            border-radius: 50%;
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 30px #FFD700;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; font-weight: 900; color: #000;
+            margin: 0 auto 8px;
+        }
+        .status-text {
+            color: #FFD700;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        /* ── Dice area ── */
+        .dice-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            min-height: 70px;
+        }
+        .dice-item {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+            border-radius: 12px;
+            border: 3px solid #FFD700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem;
+            animation: diceReveal 0.5s ease;
+        }
+        @@keyframes diceReveal {
+            0% { transform: rotateY(0deg) scale(0.5); opacity: 0; }
+            100% { transform: rotateY(360deg) scale(1); opacity: 1; }
+        }
+        @@keyframes diceShake {
+            0%,100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg) scale(1.1); }
+            75% { transform: rotate(15deg) scale(1.1); }
+        }
+        .dice-shaking { animation: diceShake 0.3s ease infinite !important; }
+
+        /* ── Bet cards grid ── */
+        .bet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .bet-card {
+            background: linear-gradient(160deg, #0d5c0d 0%, #083d08 50%, #062906 100%);
+            border: 3px solid #8B6914;
+            border-radius: 16px;
+            padding: 14px 10px 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            text-align: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.5);
+            user-select: none;
+        }
+        .bet-card:hover {
+            border-color: #FFD700;
+            box-shadow: 0 0 25px rgba(255,215,0,0.4), inset 0 0 15px rgba(255,215,0,0.05);
+            transform: translateY(-3px);
+        }
+        .bet-card.selected {
+            border-color: #FFD700 !important;
+            background: linear-gradient(160deg, #1a6b00 0%, #0d4d00 100%) !important;
+            box-shadow: 0 0 35px rgba(255,215,0,0.6), inset 0 0 20px rgba(255,215,0,0.1) !important;
+            transform: translateY(-4px);
+        }
+        .bet-card.selected::after {
+            content: '✓';
+            position: absolute; top: 6px; right: 10px;
+            color: #FFD700; font-size: 1.2rem; font-weight: bold;
+        }
+        .bet-card.win-flash {
+            animation: winFlash 0.8s ease 3;
+        }
+        @@keyframes winFlash {
+            0%,100% { border-color: #8B6914; }
+            50% { border-color: #FFD700; box-shadow: 0 0 50px rgba(255,215,0,0.9); }
+        }
+        .bet-card.lose-flash {
+            animation: loseFlash 0.8s ease 2;
+        }
+        @@keyframes loseFlash {
+            0%,100% { border-color: #8B6914; }
+            50% { border-color: #ff4444; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
+        }
+
+        /* ── Bottle gourd CSS shape for Bầu ── */
+        .bau-gourd-shape {
+            width: 42px; height: 58px;
+            margin: 0 auto 4px;
+            position: relative;
+        }
+        .bau-gourd-shape::before {
+            content: '';
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 42px; height: 42px;
+            background: radial-gradient(circle at 35% 35%, #a8f0a8 0%, #3a8a3a 45%, #1d5c1d 100%);
+            border-radius: 50%;
+            box-shadow: inset -3px -3px 8px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .bau-gourd-shape::after {
+            content: '';
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 26px; height: 26px;
+            background: radial-gradient(circle at 35% 35%, #a8f0a8 0%, #3a8a3a 45%, #1d5c1d 100%);
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 6px rgba(0,0,0,0.4);
+        }
+        .bau-gourd-shape-sm {
+            width: 28px; height: 38px;
+            display: inline-block;
+            position: relative;
+            vertical-align: middle;
+        }
+        .bau-gourd-shape-sm::before {
+            content: '';
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 28px; height: 28px;
+            background: radial-gradient(circle at 35% 35%, #a8f0a8 0%, #3a8a3a 45%, #1d5c1d 100%);
+            border-radius: 50%;
+        }
+        .bau-gourd-shape-sm::after {
+            content: '';
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 18px; height: 18px;
+            background: radial-gradient(circle at 35% 35%, #a8f0a8 0%, #3a8a3a 45%, #1d5c1d 100%);
+            border-radius: 50%;
+        }
+        .symbol-emoji { font-size: 2.8rem; line-height: 1; margin-bottom: 4px; }
+        .symbol-name { color: #FFD700; font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+        .bet-amount-on-card {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            color: #FFD700;
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+        .bet-amount-on-card.hidden { display: none; }
+
+        /* ── Bet input area ── */
+        .bet-input-area {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid #8B6914;
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+        .chip-btn {
+            background: radial-gradient(circle, #cc0000, #800000);
+            border: 3px solid #FFD700;
+            border-radius: 50%;
+            width: 52px; height: 52px;
+            color: #FFD700;
+            font-weight: 900;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        .chip-btn:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+        .chip-btn.blue { background: radial-gradient(circle, #0044cc, #002288); }
+        .chip-btn.green { background: radial-gradient(circle, #00aa44, #006622); }
+        .chip-btn.purple { background: radial-gradient(circle, #8800cc, #550088); }
+
+        .btn-bet-now {
+            background: linear-gradient(135deg, #FFD700, #B8860B);
+            color: #000;
+            font-weight: 900;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.4);
+            transition: all 0.2s;
+        }
+        .btn-bet-now:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,215,0,0.6); }
+        .btn-bet-now:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-clear {
+            background: transparent;
+            color: #ff6666;
+            border: 2px solid #ff6666;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-clear:hover { background: #ff0000; color: #fff; border-color: #ff0000; }
+
+        /* ── Result popup ── */
+        .result-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #1a0a00, #0d0600);
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 30px 40px;
+            text-align: center;
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 60px rgba(255,215,0,0.3);
+            min-width: 280px;
+        }
+        .result-popup.show { transform: translate(-50%, -50%) scale(1); }
+        .result-popup .result-title { font-size: 2rem; font-weight: 900; margin-bottom: 10px; }
+        .result-popup .win { color: #00ff88; text-shadow: 0 0 20px #00ff88; }
+        .result-popup .lose { color: #ff4444; text-shadow: 0 0 20px #ff4444; }
+        .result-popup .result-amount { font-size: 1.8rem; font-weight: bold; color: #FFD700; }
+
+        /* ── Waiting overlay ── */
+        #waitingOverlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.85);
+            border-radius: 24px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100;
+        }
+        .ready-btn {
+            background: linear-gradient(135deg, #00cc44, #007722);
+            border: 3px solid #00ff66;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: 900;
+            padding: 14px 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(0,255,100,0.3);
+            letter-spacing: 2px;
+        }
+        .ready-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(0,255,100,0.5); }
+        .ready-btn.cancel {
+            background: linear-gradient(135deg, #cc4400, #882200);
+            border-color: #ff6600;
+            box-shadow: 0 0 30px rgba(255,100,0,0.3);
+        }
+
+        /* ── Players panel ── */
+        .players-panel {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #8B6914;
+            border-radius: 16px;
+            padding: 12px;
+            max-width: 1100px;
+            margin: 0 auto 10px;
+        }
+        .player-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #555;
+            border-radius: 20px;
+            padding: 4px 12px;
+            margin: 3px;
+            color: #ccc;
+            font-size: 0.85rem;
+        }
+        .player-chip.me { border-color: #FFD700; color: #FFD700; }
+        .player-chip.ready { border-color: #00ff66; color: #00ff66; }
+        .ready-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+        .ready-dot.on { background: #00ff66; box-shadow: 0 0 6px #00ff66; }
+
+        /* ── Bet log ── */
+        .bet-log {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 8px;
+            max-height: 90px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 8px;
+        }
+
+        /* ── Win amount display ── */
+        .floating-win {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+            pointer-events: none;
+            animation: floatUp 1.5s ease forwards;
+            z-index: 50;
+        }
+        @@keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-60px); }
+        }
+
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+        input[type=number] { -moz-appearance: textfield; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #8B6914; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="d-flex align-items-center gap-3">
+        <img src="/images/logo.png.jpg" alt="BCTC88" style="height:40px;" />
+        <span class="text-warning">🏠 @Model.Name</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <div class="balance-box">
+            💰 <span id="balance">@balance</span> xu
+        </div>
+        <a href="/History" class="btn btn-sm btn-outline-warning">📋 Lịch sử</a>
+        <form action="/Room/Leave/@Model.Id" method="post" class="d-inline">
+            <button class="btn btn-sm btn-outline-danger">🚪 Rời phòng</button>
+        </form>
+    </div>
+</div>
+
+<!-- Players Panel -->
+<div class="players-panel">
+    <span class="text-warning me-2" style="font-size:.85rem;">👥 Người chơi:</span>
+    <span id="playerChips"></span>
+    <span class="text-muted ms-3" style="font-size:.8rem;" id="readyStatus"></span>
+</div>
+
+<!-- Casino Table -->
+<div class="casino-table" style="position:relative;">
+
+    <!-- Waiting Overlay -->
+    <div id="waitingOverlay">
+        <div style="font-size:3rem; margin-bottom:15px;">⏳</div>
+        <h4 class="text-warning mb-1">Đang chờ người chơi sẵn sàng</h4>
+        <p id="readyCount" class="text-muted mb-4">0/0 người sẵn sàng</p>
+        <div id="allReadyBanner" class="text-success fw-bold mb-3 fs-5 d-none">🎉 Tất cả sẵn sàng! Bắt đầu sau 2 giây...</div>
+        <button id="readyBtn" class="ready-btn" onclick="toggleReady()">✅ SẴN SÀNG</button>
+    </div>
+
+    <!-- Status + Countdown -->
+    <div class="status-bar">
+        <div class="countdown-circle" id="countdown"></div>
+        <div class="status-text" id="statusMsg">Đang chờ...</div>
+    </div>
+
+    <!-- Dice -->
+    <div class="dice-area" id="diceArea">
+        <div class="dice-item" id="dice1" style="opacity:.3">❓</div>
+        <div class="dice-item" id="dice2" style="opacity:.3">❓</div>
+        <div class="dice-item" id="dice3" style="opacity:.3">❓</div>
+    </div>
+
+    <!-- 6 Bet Cards -->
+    <div class="bet-grid">
+        @{
+            var cards = new[]
+            {
+                ("Bau", "",    "BẦU"),
+                ("Cua", "🦀", "CUA"),
+                ("Tom", "🦐", "TÔM"),
+                ("Ca",  "🐟", "CÁ"),
+                ("Ga",  "🐓", "GÀ"),
+                ("Nai", "🦌", "NAI")
+            };
+        }
+        @foreach (var (sym, emo, label) in cards)
+        {
+            <div class="bet-card" id="card-@sym" onclick="selectCard('@sym', this)">
+                @if (sym == "Bau")
+                {
+                    <div class="symbol-emoji" style="display:flex;justify-content:center;">
+                        <div class="bau-gourd-shape"></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="symbol-emoji">@emo</div>
+                }
+                <div class="symbol-name">@label</div>
+                <div class="bet-amount-on-card hidden" id="amount-@sym">0 xu</div>
+            </div>
+        }
+    </div>
+
+    <!-- Bet Input -->
+    <div class="bet-input-area">
+        <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+            <button class="chip-btn" onclick="addChip(10)">10</button>
+            <button class="chip-btn blue" onclick="addChip(50)">50</button>
+            <button class="chip-btn green" onclick="addChip(100)">100</button>
+            <button class="chip-btn purple" onclick="addChip(500)">500</button>
+            <button class="chip-btn" style="background:radial-gradient(circle,#cc8800,#885500)" onclick="addChip(1000)">1K</button>
+        </div>
+        <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-warning fw-bold">Cược:</span>
+                <input id="betAmount" type="number" min="1" value="10"
+                       style="background:#000;color:#FFD700;border:2px solid #8B6914;border-radius:10px;padding:6px 12px;width:100px;font-size:1.1rem;font-weight:bold;text-align:center;"
+                       oninput="clampBetAmount(); updateSelectedCardAmount()" />
+                <span class="text-warning">xu</span>
+            </div>
+            <button class="btn-clear" onclick="clearSelection()">🗑 Xóa</button>
+            <button class="btn-bet-now" id="placeBetBtn" onclick="placeBet()" disabled>
+                🎯 ĐẶT CƯỢC
+            </button>
+        </div>
+        <div id="betLog" class="bet-log mt-2"></div>
+    </div>
+</div>
+
+<!-- Result Popup -->
+<div class="result-popup" id="resultPopup">
+    <div id="resultTitle" class="result-title"></div>
+    <div id="resultDice" style="font-size:2rem; margin:10px 0;"></div>
+    <div id="resultAmount" class="result-amount"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script>
+    const roomId = @Model.Id;
+    const currentUserId = @currentUserId;
+    const emoji = { Bau:'<span class="bau-gourd-shape-sm"></span>', Cua:'🦀', Tom:'🦐', Ca:'🐟', Ga:'🐓', Nai:'🦌' };
+    function emojiOf(sym) { return emoji[sym] || sym; }
+
+    let selectedSymbol = null;
+    let bettingOpen = false;
+    let myIsReady = false;
+    let countdownInterval;
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/gameHub")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.onreconnected(() => connection.invoke("JoinRoom", roomId));
+
+    // ── Events ──────────────────────────────────────────────────────────────
+    connection.on("RoomStateUpdated", data => {
+        document.getElementById('readyCount').textContent =
+            `${data.readyCount} / ${data.totalPlayers} người sẵn sàng`;
+
+        const chips = data.players.map(p => `
+            <span class="player-chip ${p.id === currentUserId ? 'me' : ''} ${p.isReady ? 'ready' : ''}">
+                <span class="ready-dot ${p.isReady ? 'on' : ''}"></span>
+                ${p.username} · ${p.balance}xu
+            </span>
+        `).join('');
+        document.getElementById('playerChips').innerHTML = chips;
+        document.getElementById('readyStatus').textContent =
+            `(${data.readyCount}/${data.totalPlayers} sẵn sàng)`;
+    });
+
+    connection.on("AllReady", () => {
+        document.getElementById('allReadyBanner').classList.remove('d-none');
+        document.getElementById('readyBtn').disabled = true;
+        document.getElementById('readyBtn').textContent = '🚀 Đang bắt đầu...';
+    });
+
+    connection.on("RoundStarted", data => {
+        document.getElementById('waitingOverlay').style.display = 'none';
+        bettingOpen = true;
+        document.getElementById('placeBetBtn').disabled = false;
+        document.getElementById('statusMsg').textContent = '🎯 ĐẶT CƯỢC NGAY!';
+        document.getElementById('statusMsg').style.color = '#00ff88';
+        resetDice();
+        clearBetAmounts();
+        document.getElementById('betLog').innerHTML = '';
+        startCountdown(data.bettingSeconds);
+    });
+
+    connection.on("BettingClosed", () => {
+        bettingOpen = false;
+        document.getElementById('placeBetBtn').disabled = true;
+        document.getElementById('statusMsg').textContent = '🎲 Đang lắc xúc xắc...';
+        document.getElementById('statusMsg').style.color = '#FFD700';
+        clearInterval(countdownInterval);
+        document.getElementById('countdown').textContent = '🎲';
+        shakeDice();
+    });
+
+    connection.on("RoundResult", data => {
+        const [d1, d2, d3] = data.dice;
+        showDice(d1, d2, d3);
+
+        document.getElementById('statusMsg').textContent = '📊 Kết quả vòng này!';
+
+        // Flash cards
+        data.dice.forEach(d => {
+            const card = document.getElementById('card-' + d);
+            if (card) card.classList.add('win-flash');
+        });
+
+        const mine = data.results.find(r => r.userId === currentUserId);
+        if (mine) {
+            document.getElementById('balance').textContent = mine.balance;
+            const win = mine.winAmount > 0;
+            showResultPopup(win, mine.winAmount, d1, d2, d3);
+        }
+
+        // Update players balance
+        connection.invoke("JoinRoom", roomId);
+    });
+
+    connection.on("BalanceUpdated", bal => {
+        document.getElementById('balance').textContent = bal;
+    });
+
+    connection.on("BetPlaced", data => {
+        const log = document.getElementById('betLog');
+        const who = data.userId === currentUserId ? '<span style="color:#FFD700">Bạn</span>' : '🧑';
+        log.innerHTML = `<div>${who} đặt <b style="color:#FFD700">${data.amount}</b>xu vào ${emojiOf(data.symbol)} ${data.symbol}</div>` + log.innerHTML;
+    });
+
+    connection.on("GameEnded", msg => {
+        document.getElementById('waitingOverlay').style.display = 'flex';
+        document.getElementById('allReadyBanner').classList.add('d-none');
+        const btn = document.getElementById('readyBtn');
+        btn.disabled = false;
+        btn.textContent = '✅ SẴN SÀNG';
+        btn.className = 'ready-btn';
+        myIsReady = false;
+        resetDice();
+    });
+
+    // ── UI functions ─────────────────────────────────────────────────────────
+    function clampBetAmount() {
+        const input = document.getElementById('betAmount');
+        const balance = parseFloat(document.getElementById('balance').textContent) || 0;
+        const val = parseFloat(input.value) || 0;
+        if (val > balance) input.value = balance;
+        if (val < 1) input.value = 1;
+    }
+
+    function selectCard(sym, el) {
+        if (!bettingOpen) return;
+        document.querySelectorAll('.bet-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedSymbol = sym;
+        updateSelectedCardAmount();
+    }
+
+    function updateSelectedCardAmount() {
+        if (!selectedSymbol) return;
+        const amt = parseFloat(document.getElementById('betAmount').value) || 0;
+        const el = document.getElementById('amount-' + selectedSymbol);
+        if (el) {
+            el.textContent = amt + ' xu';
+            el.classList.remove('hidden');
+        }
+    }
+
+    function addChip(val) {
+        const input = document.getElementById('betAmount');
+        const currentBalance = parseFloat(document.getElementById('balance').textContent) || 0;
+        const newVal = (parseFloat(input.value) || 0) + val;
+        input.value = Math.min(newVal, currentBalance);
+        updateSelectedCardAmount();
+    }
+
+    function clearSelection() {
+        document.querySelectorAll('.bet-card').forEach(c => c.classList.remove('selected'));
+        selectedSymbol = null;
+        document.getElementById('betAmount').value = 10;
+        clearBetAmounts();
+    }
+
+    function clearBetAmounts() {
+        document.querySelectorAll('.bet-amount-on-card').forEach(el => {
+            el.classList.add('hidden');
+            el.textContent = '0 xu';
+        });
+        document.querySelectorAll('.bet-card').forEach(c => {
+            c.classList.remove('selected', 'win-flash', 'lose-flash');
+        });
+        selectedSymbol = null;
+    }
+
+    function placeBet() {
+        if (!selectedSymbol || !bettingOpen) return;
+        const amount = parseFloat(document.getElementById('betAmount').value);
+        const currentBalance = parseFloat(document.getElementById('balance').textContent) || 0;
+        if (amount <= 0) { alert('Số tiền cược phải lớn hơn 0!'); return; }
+        if (amount > currentBalance) { alert(`Không đủ xu! Bạn chỉ còn ${currentBalance} xu.`); return; }
+        connection.invoke("PlaceBet", roomId, selectedSymbol, amount);
+    }
+
+    function toggleReady() {
+        if (document.getElementById('readyBtn').disabled) return;
+        connection.invoke("ToggleReady", roomId);
+        myIsReady = !myIsReady;
+        const btn = document.getElementById('readyBtn');
+        if (myIsReady) {
+            btn.textContent = '❌ HUỶ SẴN SÀNG';
+            btn.className = 'ready-btn cancel';
+        } else {
+            btn.textContent = '✅ SẴN SÀNG';
+            btn.className = 'ready-btn';
+        }
+    }
+
+    function startCountdown(seconds) {
+        clearInterval(countdownInterval);
+        let rem = seconds;
+        const el = document.getElementById('countdown');
+        el.textContent = rem;
+        el.style.background = 'radial-gradient(circle, #FFD700, #B8860B)';
+        countdownInterval = setInterval(() => {
+            rem--;
+            el.textContent = rem > 0 ? rem : '';
+            if (rem <= 10) el.style.background = 'radial-gradient(circle, #ff4444, #880000)';
+            if (rem <= 0) clearInterval(countdownInterval);
+        }, 1000);
+    }
+
+    function resetDice() {
+        ['dice1','dice2','dice3'].forEach(id => {
+            const el = document.getElementById(id);
+            el.textContent = '❓'; el.style.opacity = '0.3';
+            el.classList.remove('dice-shaking');
+        });
+    }
+
+    function shakeDice() {
+        ['dice1','dice2','dice3'].forEach(id => {
+            const el = document.getElementById(id);
+            el.style.opacity = '1';
+            el.classList.add('dice-shaking');
+        });
+    }
+
+    function showDice(d1, d2, d3) {
+        const vals = [d1, d2, d3];
+        ['dice1','dice2','dice3'].forEach((id, i) => {
+            const el = document.getElementById(id);
+            el.classList.remove('dice-shaking');
+            setTimeout(() => {
+                el.innerHTML = emojiOf(vals[i]);
+                el.style.opacity = '1';
+                el.style.animation = 'none';
+                el.offsetHeight; // reflow
+                el.style.animation = 'diceReveal 0.5s ease';
+            }, i * 200);
+        });
+    }
+
+    function showResultPopup(win, amount, d1, d2, d3) {
+        const popup = document.getElementById('resultPopup');
+        document.getElementById('resultTitle').className = 'result-title ' + (win ? 'win' : 'lose');
+        document.getElementById('resultTitle').textContent = win ? '🎉 THẮNG!' : '😢 THUA';
+        document.getElementById('resultDice').innerHTML = [d1,d2,d3].map(d => emojiOf(d)).join('  ');
+        document.getElementById('resultAmount').textContent = (win ? '+' : '') + amount + ' xu';
+        popup.classList.add('show');
+        setTimeout(() => popup.classList.remove('show'), 3000);
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────────────
+    connection.start()
+        .then(() => connection.invoke("JoinRoom", roomId))
+        .catch(err => console.error("SignalR error:", err));
+</script>
+</body>
+</html>
