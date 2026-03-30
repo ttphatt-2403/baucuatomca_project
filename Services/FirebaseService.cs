@@ -10,11 +10,25 @@ public class FirebaseService
     {
         if (FirebaseApp.DefaultInstance != null) return;
 
-        var credentialPath = config["Firebase:CredentialPath"];
-        FirebaseApp.Create(new AppOptions
+        var jsonCredential = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS");
+        if (!string.IsNullOrEmpty(jsonCredential))
         {
-            Credential = GoogleCredential.FromFile(credentialPath)
-        });
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromJson(jsonCredential)
+            });
+        }
+        else
+        {
+            var credentialPath = config["Firebase:CredentialPath"];
+            if (!string.IsNullOrEmpty(credentialPath) && System.IO.File.Exists(credentialPath))
+            {
+                FirebaseApp.Create(new AppOptions
+                {
+                    Credential = GoogleCredential.FromFile(credentialPath)
+                });
+            }
+        }
     }
 
     public async Task<FirebaseToken?> VerifyTokenAsync(string idToken)
