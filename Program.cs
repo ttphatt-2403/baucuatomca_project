@@ -8,7 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // EF Core
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+    else
+    {
+        var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+        options.UseNpgsql(connectionString);
+    }
+});
 
 // Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -50,12 +60,18 @@ app.MapControllerRoute(
 // SignalR Hub
 app.MapHub<GameHub>("/gameHub");
 
-// Auto migrate on startup (dev only)
-if (app.Environment.IsDevelopment())
+// Auto migrate/create on startup
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    if (app.Environment.IsDevelopment())
+    {
+        db.Database.Migrate(); // Use SQL Server Migrations for local dev
+    }
+    else
+    {
+        db.Database.EnsureCreated(); // Auto create tables for PostgreSQL on Render
+    }
 }
 
 app.Run();
