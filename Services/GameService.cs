@@ -26,6 +26,6 @@ public class GameService
               + (d2 == bet.Symbol ? 1 : 0)
               + (d3 == bet.Symbol ? 1 : 0);
 
-        return n == 0 ? -bet.Amount : bet.Amount * n;
+        return n == 0 ? 0m : bet.Amount * (n + 1);
     }
 }
